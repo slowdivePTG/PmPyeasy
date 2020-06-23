@@ -351,8 +351,8 @@ class photometry():
 				RA_str  = self.base.first_targets_info[self.base.first_targets_info['Name']==self.current_sn]['RA'].data[0]
 				Dec_str = self.base.first_targets_info[self.base.first_targets_info['Name']==self.current_sn]['Dec'].data[0]
 			else:
-				RA_str  = self.base.first_targets_info[self.base.first_targets_info['Name']==self.current_sn]['RA'].data[0]
-				Dec_str = self.base.first_targets_info[self.base.first_targets_info['Name']==self.current_sn]['Dec'].data[0]
+				RA_str  = self.base.second_targets_info[self.base.second_targets_info['Name']==self.current_sn]['RA'].data[0]
+				Dec_str = self.base.second_targets_info[self.base.second_targets_info['Name']==self.current_sn]['Dec'].data[0]
 
 			RA_deg,Dec_deg = radec_format_transformation(RA_str,Dec_str)
 			print "%s (RA,DEC)=(%s,%s): (%s,%s)"%(self.current_sn, RA_str, Dec_str, RA_deg, Dec_deg)
@@ -432,6 +432,7 @@ class photometry():
 		self.apass_mag_saturate_cut = None
 		self.apass_nobs_min = None
 		self.apass_mobs_min = None
+		self.apass_remove_single_measurement = True
 
 		self.twomass_mag_faint_cut = None
 		self.twomass_mag_saturate_cut = None
@@ -1873,6 +1874,7 @@ class photometry():
 		magserr_offset = np.sqrt(magserr_ref**2+magserr_input**2)
 
 
+
 		magoffset0 = np.median(mags_offset)
 		if self.cal_offset_funcfit_type == 'o1poly':
 			def func(x,a,b):
@@ -2365,7 +2367,7 @@ class photometry():
 		elif method == 'external':
 			match_ret = self.__stdcal_template_link_std_obs_selection_external_single_image(imgkey,flt)
 		else:
-			raise IOError("Invalid input for method, available options are grmatch, selection_on_ds9 and external")
+			raise IOError("Invalid input for method, available options are grmatch, surrouding_search, xytran, selection_on_ds9 and external")
 
 		return match_ret
 
@@ -3808,6 +3810,8 @@ class photometry():
 
 			refstars = refstars[refstars[magcolname]<50]
 			refstars = refstars[refstars[magcolname]!=0]
+			if self.apass_remove_single_measurement:
+				refstars = refstars[refstars[magerrcolname]!=0]
 			mag = refstars[magcolname].data
 			magerr = refstars[magerrcolname].data
 
@@ -3833,6 +3837,11 @@ class photometry():
 			std = std[std[:,2]>self.apass_mag_saturate_cut]
 			if verbose:
 				print "fainter than %s sources survived"%saturate_mag_cut
+
+		if self.apass_remove_single_measurement:
+			std = std[std[:,3]>0]
+			if verbose:
+				print "measurements with magnitude uncertainty = 0 removed"
 
 		mask = ((std[:,0]>0)*(std[:,0]<NX))*((std[:,1]>0)*(std[:,1]<NY))
 		std = std[mask,:] #only the standard stars within the input image region are needed
@@ -5451,10 +5460,8 @@ class photometry():
 		for image_key in images:
 			if self.photometry_info[image_key]['drop'] >0:
 				continue
-
 			if self.photometry_info[image_key]['instmag'] != 99.99 and not self.renew_aperture_photometry:
 				continue
-
 			photret_singlept = self.__aperture_photometry_apphot_iraf_target_single(image_key, which_dir =  which_dir, aperture_size_fixed=aperture_size_fixed, fwhm_img=imagefwhm, centering = centering, x=x, y=y)
 
 			if len(photret_singlept) == 0:
@@ -6454,7 +6461,30 @@ class photometry():
 		standards = Table.read(apassstdfile, format='ascii.csv')
 		self.__load_standards_region_to_ds9_image(img, standards, color='red', text1col=text1col, text2col=text2col, newds9=newds9)
 
+	def stat_apass_standards(self, outfile=None):
+		'''
+		display the mag VS. e_mag plot
+		'''
+		if self.standards is None:
+			raise ValueError('prepare the standard catalog first')
 
+		fig = plt.figure(figsize=(8,7))
+		ax1 = fig.add_subplot(221)
+		ax2 = fig.add_subplot(222)
+		ax3 = fig.add_subplot(223)
+		ax4 = fig.add_subplot(224)
+
+		for ax,magcol in zip([ax1,ax2,ax3,ax4],['Bmag','Vmag','r_mag','i_mag']):
+			ax.plot(self.standards[magcol], self.standards['e_'+magcol],'.')
+			ax.set_xlabel(magcol)
+			ax.set_ylabel('e_'+magcol)
+			ax.set_ylim([-0.02, 0.3])
+
+		if outfile is not None:
+			savefile = os.path.join(self.std_ref_dir, outfile)
+			plt.savefig(savefile)
+
+		plt.show()
 
 	def load_current_standards_to_ds9_image(self, img, text1col=None, text2col=None, newds9=True):
 		'''
@@ -7786,9 +7816,10 @@ class photometry():
 		self.photometry_info --> self.result_table_newsaved
 		'''
 		self.result_table_newsaved = Table(names=self.photometry_info_keys,dtype=self.photometry_info_dtypes)
-                for img in self.photometry_info.keys():
-                	self.result_table_newsaved.add_row(self.photometry_info[img].values())
-
+        	for img in self.photometry_info.keys():
+            		self.result_table_newsaved.add_row(self.photometry_info[img].values())
+		for colname in ['relmag', 'relmagerr','calmag','calmagerr']:
+			self.result_table_newsaved[colname] = np.round(self.result_table_newsaved[colname], 3)
 
 
 	def __load_old_results(self,info_table,info_dict):
@@ -8390,7 +8421,7 @@ class photometry():
 			np.savetxt(outfile, sdtplphot)
 
 
-	def match_sources_on_two_images(self, in_imgkey, ref_imgkey, option=None,mode='file', ref_col1=1, ref_col2=2, input_col1=1, input_col2=2, input_order_col=-3, ref_order_col=-3, max_distance=1, maxnum=None, matched_xyxy_outfile=None, matched_trans_output=None,  match_result_display=False, show_match_stat=False):
+	def match_sources_on_two_images(self, in_imgkey, ref_imgkey, option=None,mode='file', ref_col1=1, ref_col2=2, input_col1=1, input_col2=2, input_order_col=-3, ref_order_col=-3, max_distance=1, matched_xyxy_outfile=None, matched_trans_output=None,  match_result_display=False, show_match_stat=False):
 		'''
 		match two set of sources detected on input image and reference image
 
@@ -8411,11 +8442,8 @@ class photometry():
 
 		reflist_data = np.loadtxt(ref_list)
 		Nr_ref, Nc_ref = reflist_data.shape
-		if maxnum is not None:
-			self.grmatch_maxnum=maxnum
 
 		#check here
-
 		matched_data = self.__fitsh_grmatch(ref_list,input_list, match_output, transcoeff_output, mode =mode)
 		wanted_columns = [ref_col1-1, ref_col2-1, input_col1+Nc_ref-1, input_col2+Nc_ref-1]
 		matched_xyxy = matched_data[:,wanted_columns]
@@ -8630,7 +8658,7 @@ class photometry():
 		for img in fltimgs['name']:
    			if self.photometry_info[img]['drop'] == 0:
 				try:
-        				self.match_sources_on_two_images(img, tplimg, maxnum=30, match_result_display=0, show_match_stat=0, option=1)
+        				self.match_sources_on_two_images(img, tplimg, match_result_display=0, show_match_stat=0, option=1)
 				except:
 					faillist.append(img)
 					continue
@@ -8870,7 +8898,7 @@ class photometry():
 
 			matched_xyxy_outfile = os.path.join(self.stars_dir, "match_%s_%s_xyxy.txt"%(in_imgkey_s, ref_imgkey_s))
 			if (not os.path.exists(matched_xyxy_outfile)) or renew_matched_sourcelist:
-				self.match_sources_on_two_images(imgkey, refimgkey, option=None, mode='file', ref_col1=1, ref_col2=2, input_col1=1, input_col2=2, input_order_col=-3, ref_order_col=-3, max_distance=1, maxnum=None, matched_xyxy_outfile=None, match_result_display=False, show_match_stat=False)
+				self.match_sources_on_two_images(imgkey, refimgkey, option=None, mode='file', ref_col1=1, ref_col2=2, input_col1=1, input_col2=2, input_order_col=-3, ref_order_col=-3, max_distance=1, matched_xyxy_outfile=None, match_result_display=False, show_match_stat=False)
 
 			resample_outfile = os.path.join(self.subtraction_dir, 'interp_%s.fits'%in_imgkey_s)
 			if (not os.path.exists(resample_outfile)) or renew_resampled_img:
@@ -8941,15 +8969,7 @@ class photometry():
 		'''
 		add constant value addvalue to the inputimage
 		'''
-
-		if input_which_dir == 'raw_image':
-			imgdir = self.raw_image_dir
-		elif input_which_dir == 'modified_image':
-			imgdir = self.modified_image_dir
-		else:
-			raise ValueError("the input image dir not recognised")
-
-		input_image = os.path.join(imgdir,imgkey)
+		input_image = self.__get_internal_image(imgkey, which_dir=input_which_dir)
 		if output_image is None:
 			output_image = input_image
 

@@ -5,8 +5,8 @@
   - [ ] DoPHOT
   - [x] [FITSH](#fitsh)
 - [ ] Examples
-  - [ ] Small FOV
-- [ ] Others
+  - [ ] [Small FOV](#smallfov)
+- [ ] [Problems](#problem)
 
 
 <div style="page-break-after: always; break-after: page;"></div>
@@ -41,7 +41,7 @@ Tasks used:
 
 ## Examples
 
-#### 1. Small FOV Case
+#### 1. Small FOV Case <a name='smallfov'></a>
 
 Situations occur when the images have small FOV and it's not likely to get the WCS solution easily. Then matching between stars in template images and standard stars from external catalog can not be done automatically where manual work required.
 
@@ -72,4 +72,8 @@ Next, display the reference stars with labeled ID which aids selecting correspon
 <center>
 <img src="edge_false_detection.png" alt="drawing" width="300"/>
 </center>
- 
+
+
+##  Problems <a name='problem'></a>
+
+#### hotpants fails for image with low background values
