@@ -64,7 +64,6 @@ def query_local_APASS(ra,dec,distance,output_file='/home/asassn/ASASSN/photometr
 	filenames = __get_region_file(local_database_dir,fileindex)
 	print "filenames involved in the search:", filenames
 
-
 	if os.path.isfile(output_file):
 		os.remove(output_file)
 
@@ -76,7 +75,6 @@ def query_local_APASS(ra,dec,distance,output_file='/home/asassn/ASASSN/photometr
 	    std_ref =  os.path.join(local_database_dir,filenames[key])
 
 	    print std_ref
-
 	    fid = open(std_ref)
 	    line= fid.readline()
 	    line= fid.readline()
@@ -114,13 +112,10 @@ def __get_region_index(ra,dec):
 	get the corresponding file given ra dec range of the target image
 	ra and dec are in units of degree
 	'''
-
 	ral = ra[0]
 	rah = ra[1]
-
 	decl = dec[0]
 	dech = dec[1]
-
 	segments = np.arange(-90,90,5)
 
 	diff1 = decl-segments
@@ -149,12 +144,10 @@ def __get_region_file(stdref_database_dir,fileindex,):
     prepare
     '''
     std_ref_files = os.listdir(stdref_database_dir)
-
     filenames = {}
     fileindex = fileindex.ravel()
 
     for blg in fileindex:
-
         if blg>0:
 	    blg_str = str(blg)
 	    print blg_str
@@ -293,13 +286,36 @@ def gaia2_query_Vizier(ra_deg, dec_deg, rad_deg, outfile=None):
 
 	catalog.write(outfile, format='ascii.csv')
 
-def gaia2_query_mast_Catalogs(ra_deg, dec_deg, rad_deg, outfile=None):
+def gaia_query_mast_Catalogs(ra_deg, dec_deg, rad_deg, outfile=None, version=2):
 	'''
 	An optional version parameter allows you to select which version you want, the default is the highest version.
+	version=2 equals DR2
 	'''
-	catalog_data = Catalogs.query_region("%s %s"%(ra_deg, dec_deg), radius=rad_deg, catalog="Gaia", version=2)
+	catalog_data = Catalogs.query_region("%s %s"%(ra_deg, dec_deg), radius=rad_deg, catalog="Gaia", version=version)
 	if outfile is None:
-		outfile = 'Gaia2_RA%s_Dec%s_table_MAST.csv'%(str(ra_deg, dec_deg))
+		outfile = 'Gaia%s_RA%s_Dec%s_table_MAST.csv'%(version,str(ra_deg), str(dec_deg))
+
+	catalog.write(outfile, format='ascii.csv')
+
+
+
+
+
+def ps1_query_mast_Catalogs(ra_deg, dec_deg, rad_deg, outfile=None, data_release='dr2', table='mean'):
+	'''
+	The PanSTARRS Catalog has multiple data releases as well as multiple queryable tables.
+	An optional data release parameter allows you to select which data release is desired,
+	with the default being the latest version (dr2). The table to query is a required parameter.
+
+	DR 1 Mean, and Stack: 'mean', 'stack'
+	DR 2 Mean, Stack, and Detection: 'mean', 'stack', 'detection', 'forced_mean'
+
+	See details below:
+	https://catalogs.mast.stsci.edu/docs/panstarrs.html
+	'''
+	catalog_data = Catalogs.query_region("%s %s"%(ra_deg, dec_deg), radius=rad_deg, catalog="Panstarrs", data_release=data_release, table=table)
+	if outfile is None:
+		outfile = 'PS1_%s_RA%s_Dec%s_table_MAST.csv'%(data_release,str(ra_deg), str(dec_deg))
 
 	catalog.write(outfile, format='ascii.csv')
 

@@ -79,107 +79,20 @@ from pyds9tk.ds9_display_sources import create_ds9_region_file, pylab_talk_to_ds
 import warnings
 warnings.filterwarnings('ignore')
 
+from photbasesetup import basesetup
 
-class basesetup:
+import pickle
+
+def load_phot_target(picklefile):
 	'''
-	set up directories, load telescoep info, load pre-defined targets info
+	Load pickled photometry object
 	'''
-	def __init_attributes__(self):
-		self.upload_data_dir = "" #remote server address:folder
-		self.save_data_local_dir = "" #photometry result archival folder
-
-		self.data_repository_master_dir = "/Volumes/MyPassport/images" #for pipeline set up
-		self.workplace_master_dir = "/Volumes/MyPassport/photometry"
-		#self.data_repository_master_dir = "/home/asassn/ASASSN/repository" #for pipeline set up
-		#self.workplace_master_dir = "/home/asassn/ASASSN/"
-
-		self.base_dir     = os.path.dirname(os.path.realpath(__file__))
-		self.stdcat_dir = os.path.join(self.base_dir, 'stdcat')
-		self.conffile_dir = os.path.join(self.base_dir, 'conf')
-		self.extern_dir = os.path.join(self.base_dir, 'extern')
-
-		#------------------ set below properly; if not provided, then try global system command ------
-		self.diapl_dir   = os.path.join(self.extern_dir, 'DIAPL/DIAPL_BIN/') #the executable binary folder of diapl
-		self.ccdproc_dir = os.path.join(self.extern_dir, 'CCDProc')
-		self.dophot_C_dir= os.path.join(self.extern_dir, 'DoPHOT_C-master')
-		self.dophot_fortran_dir = os.path.join(self.extern_dir, 'dophot')
-		self.fitsh_dir   = os.path.join(self.extern_dir, 'fitsh-0.9.1/src')
-		self.hotpants_dir= os.path.join(self.extern_dir, 'hotpants-master')
-
-		self.first_targets_info = None
-		self.first_targets_file = os.path.join(self.conffile_dir, 'targets_info_lookup_table_01.txt')
-		self.second_targets_info = None
-		self.second_targets_file = os.path.join(self.conffile_dir, 'targets_info_lookup_table_02.txt')
-		self.telescopes_info_file = os.path.join(self.conffile_dir,'telescopes.info')
-	        self.telescopes_available = self.__get_telescopes_names(self.telescopes_info_file)
-                self.telescopes_info = {}
-		self.registerd_photometry_info_file = os.path.join(self.conffile_dir,'photometry_objects.info')
-		self.registerd_photometry_objects = self.__get_registerd_photometry_objects(self.registerd_photometry_info_file)
-		self.registerd_photometry_objects_info = {}
-		self.phot_ret = {}
-
-	def __init__(self):
-		'''
-		init the class
-		'''
-		self.__init_attributes__()
-		for telescope in self.telescopes_available:
-                	self.telescopes_info[telescope] = self.__ConfigParser_get_options_given_section(self.telescopes_info_file,telescope)
-
-		for photometry_object in self.registerd_photometry_objects:
-			self.registerd_photometry_objects_info[photometry_object] = self.__ConfigParser_get_options_given_section(self.registerd_photometry_info_file,photometry_object)
-
-		try:
-			self.first_targets_info = Table.read(self.first_targets_file, format='ascii.fixed_width')
-		except:
-			print "Failded to load the first target info table %s"%self.first_targets_file
-
-		try:
-			self.second_targets_info = Table.read(self.second_targets_file, format='ascii.fixed_width')
-		except:
-			print "Failed to load the second target info table %s"%self.second_targets_file
-
-	def __get_registerd_photometry_objects(self,info_file):
-		objects_names = self.__get_configfile_sections(info_file)
-		return objects_names
-
-
-	def __get_telescopes_names(self,info_file):
-		telescopes_codes = self.__get_configfile_sections(info_file)
-		return telescopes_codes
-
-	def __get_configfile_sections(self,info_file):
-                Config = ConfigParser.ConfigParser()
-                Config.read(info_file)
-	        sections = Config.sections()
-
-		return sections
-
-
-	def __ConfigParser_get_options_given_section(self,info_file,section):
-		'''
-		Output:
-			info_file: the input file
-			section: the config section name
-		'''
-		Config = ConfigParser.ConfigParser()
-		Config.read(info_file)
-
-		info_dict = {}
-		options = Config.options(section)
-		for option in options:
-		    try:
-		    	info_dict[option] = Config.get(section, option)
-		    	if info_dict[option] == -1:
-		        	print("Skip: %s" % option)
-		    except:
-		        print("Exception on %s!" % option)
-		        info_dict[option] = None
-		return info_dict
-
-
-
-
+	try:
+		sn = pickle.load(open(picklefile,'r'))
+	except:
+		sn = None
+		print "failed to load picklefile %s"%picklefile
+	return sn
 
 class photometry():
 	'''
@@ -202,7 +115,7 @@ class photometry():
 		self.current_sn = sn
 		self.current_telescope = telescope
 		self.photometry_method = photometry_method
-		self.readme = ["Please keep the notes below regarding the reduction: "]
+		self.readme = "Please keep the notes below regarding the reduction: "
 
 		self.ds9D = None #store the current instance of ds9
 		#set up data repository and photometry directory system
@@ -263,10 +176,8 @@ class photometry():
 			self.apphots[img] = img_apphot
 			self.psfphots[img]= img_psfphot
 
-
 		self.stdobs_match_files	= {}
 		self.stdobs_transcoef_files = {}
-
 
 		self.__init_photometry_info()
 		self.__init_iraf_apphot_config()
@@ -762,12 +673,20 @@ class photometry():
 			notes = open(self.notesfile).readlines()
 			print notes
 
-	def add_notes(self, notes):
+	def add_note(self, note):
 		'''
-		add notes to the reduction README file
+		add note to self.readme
 		'''
-		fid = open(self.notesfile, 'awt')
-		fid.write(notes)
+		self.readme = self.readme + note+'\n'
+
+	def save_notes(self, outfile=None):
+		'''
+		save notes in self.readme to the outfile; default outfile: self.notesfile, reduction README file
+		'''
+		if outfile is None:
+			outfile = self.notesfile
+		fid = open(outfile, 'awt')
+		fid.write(self.readme)
 		fid.close()
 
 	def get_single_star_SNR(self,flt,photometry_function = 'iraf'):
@@ -7797,11 +7716,28 @@ class photometry():
 		else:
 			print "no valid input for this action..."
 
+	def save(self, outfile=None):
+		'''
+		pickle the current photometry instance to self.result_dir
+		'''
+		if outfile is None:
+			outfile = 'photometry.pickle'
+		savetofile = os.path.join(self.result_dir, outfile)
 
+		if os.path.exists(savetofile):
+			print "%s already exists; leave now and let you check!"
+			return
+
+		print "the photometry object will be pickled to %s"%savetofile
+		f = open(savetofile, 'w')
+		pickle.dump(self, f)
+		f.close()
 
 
 	def save_results(self,save_filename = None):
-
+		'''
+		convert photometry_info dictionary to table and save.
+		'''
 		self.__dict2table()
 		self.result_table_newsaved.sort('obstime')
 
@@ -8307,7 +8243,7 @@ class photometry():
 
 		lned_images_realpath = [os.path.realpath(os.path.join(to_dir,img)) for img in lned_images]
 		for image in ori_images:
-			image_abs = os.path.join(from_dir,image)
+			image_abs = os.path.realpath(os.path.join(from_dir,image))
 			if image_abs not in lned_images_realpath:
 				obs_indicator = '0'*(numdig-len(str(num)))+str(num)
 				new_lned_image = obs_indicator + '.fits'
