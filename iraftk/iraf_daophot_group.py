@@ -1,12 +1,8 @@
 #! /usr/bin/python
 
-import numpy as np
 from pyraf import iraf
-from iraf import digiphot,apphot,daophot
-import os
-from astropy.io import fits
-from astropy.table import Table
-
+from iraf import daophot
+from iraf import group
 
 def daophot_group_iraf(image, photfile, psfimage, groupfile):
 	'''
@@ -17,11 +13,11 @@ def daophot_group_iraf(image, photfile, psfimage, groupfile):
 		groupfile:
 	'''
 
-	daophot.datapars.unlearn()
-	daophot.daopars.unlearn()
-	daophot.group.unlearn()
+	group.datapars.unlearn()
+	group.daopars.unlearn()
+	group.unlearn()
 
-	daophot.group(image=image, photfile=photfile, psfimage=psfimage, groupfile=groupfile,  verify='no', update='no')	
+	group(image=image, photfile=photfile, psfimage=psfimage, groupfile=groupfile,  verify='no', update='no')	
 
 
 

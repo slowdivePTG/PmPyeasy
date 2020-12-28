@@ -9,7 +9,7 @@ fltkey:		FILTER
 obstimekey:	MJD-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey:     AIRMASS  
+airmasskey:     AIRMASS
 
 [LCOGT2m]
 code:		LCO2m
@@ -22,7 +22,7 @@ fltkey:		FILTER
 obstimekey:	MJD-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [LCOGT0m4]
@@ -50,13 +50,13 @@ fltkey:		FILTER1
 obstimekey:	MJD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 
 [Iowa]
 code:		Iowa
-gain:		2.93	
+gain:		2.93
 readnoise:	10
 satval:		60000
 nx:		1024
@@ -65,7 +65,7 @@ fltkey:		FILTER
 obstimekey:	JD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 
@@ -85,7 +85,7 @@ fltkey:		FILTER
 obstimekey:	JD DATE-OBS TIME-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [JB]
@@ -99,7 +99,7 @@ fltkey:		FILTER
 obstimekey:	JD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [RP]
@@ -113,7 +113,7 @@ fltkey:		FILTER
 obstimekey:	JD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [RK]
@@ -126,8 +126,8 @@ ny:		1024
 fltkey:		FILTER
 obstimekey:	DATE-OBS TIME-OBS
 exptimekey:	EXPTIME
-bitpixkey:	BITPIX	
-airmasskey: 
+bitpixkey:	BITPIX
+airmasskey:
 
 [OAUV]
 code:		OAUV
@@ -137,10 +137,10 @@ satval:		65535
 nx:		2048
 ny:		2048
 fltkey:		FILTER
-obstimekey:	DATE-OBS 
+obstimekey:	DATE-OBS
 exptimekey:	EXPTIME
-bitpixkey:	BITPIX	
-airmasskey: 
+bitpixkey:	BITPIX
+airmasskey:
 
 
 [GC]
@@ -153,8 +153,8 @@ ny:		2048
 fltkey:		FILTER
 obstimekey:	MIDPOINT JD
 exptimekey:	EXPTIME
-bitpixkey:	BITPIX	
-airmasskey: 
+bitpixkey:	BITPIX
+airmasskey:
 
 
 [JG]
@@ -167,8 +167,8 @@ ny:		2048
 fltkey:		FILTER
 obstimekey:	JD
 exptimekey:	EXPTIME
-bitpixkey:	BITPIX	
-airmasskey: 
+bitpixkey:	BITPIX
+airmasskey:
 
 [KA]
 code:		KA
@@ -180,8 +180,8 @@ ny:		512
 fltkey:		FILTER
 obstimekey:	DATE-AVG
 exptimekey:	EXPTIME
-bitpixkey:	BITPIX	
-airmasskey: 
+bitpixkey:	BITPIX
+airmasskey:
 
 [NJ]
 code:		NJ
@@ -190,11 +190,11 @@ readnoise:	10
 satval:		65535
 nx:		1536
 ny:		1024
-fltkey:		
+fltkey:
 obstimekey:	DATE-OBS
 exptimekey:	EXPTIME
-bitpixkey:	BITPIX	
-airmasskey: 
+bitpixkey:	BITPIX
+airmasskey:
 
 
 
@@ -209,7 +209,7 @@ fltkey:		FILTID1 FILTID2
 obstimekey:	JD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 
@@ -224,7 +224,7 @@ fltkey:		FILTER
 obstimekey:	DATE-OBS TIME-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 [LTH2RG]
 code:		LTH2RG
@@ -237,7 +237,7 @@ fltkey:		FILTER1
 obstimekey:	MJD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [TJO]
@@ -251,7 +251,7 @@ fltkey:		FILTER
 obstimekey:	JD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 [DEMONEXT]
 code:		DN
@@ -264,7 +264,7 @@ fltkey:		FILTER
 obstimekey:	JD_UTC
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [SMARTS]
@@ -278,7 +278,7 @@ fltkey:		CCDFLTID
 obstimekey:	JD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey: SECZ
 
 
 [SMARTS-IR]
@@ -292,7 +292,7 @@ fltkey:		IRFLTID
 obstimekey:	JD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey: SECZ
 
 
 
@@ -307,7 +307,21 @@ fltkey:		FILTER
 obstimekey:	MJD-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
+
+
+[REM-NIR]
+code:		REM
+gain:		5.0
+readnoise:	4.5
+satval:		65535
+nx:		512
+ny:		512
+fltkey:		FILTER
+obstimekey:	MJD-OBS
+exptimekey:	EXPTIME
+bitpixkey:	BITPIX
+airmasskey: AIRMASS
 
 
 [WFCCD]
@@ -321,7 +335,7 @@ fltkey:		FILTER
 obstimekey:	DATE-OBS UT-TIME
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 
@@ -330,13 +344,13 @@ code:		SITe2K
 gain:		3.0
 readnoise:	9.9
 satval:		65535
-nx:		2048	
+nx:		2048
 ny:		1024
 fltkey:		FILTER
 obstimekey:	DATE-OBS UT-TIME
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [GS]
@@ -350,7 +364,7 @@ fltkey:		FILTER
 obstimekey:	JD
 exptimekey: 	EXPOSURE
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [SDSS]
@@ -364,7 +378,7 @@ fltkey:         FILTER
 obstimekey:     DATE-OBS TAIHMS
 exptimekey:     EXPTIME
 bitpixkey:      BITPIX
-airmasskey: 
+airmasskey:
 
 [LDSS3C]
 code:		LDSS3C
@@ -377,12 +391,12 @@ fltkey:		FILTER
 obstimekey:	DATE-OBS TIME-OBS
 exptimekey:	EXPTIME
 bitpixkey: 	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [OSIRIS]
 code:		OSIRIS
-gain:		0.95 
+gain:		0.95
 readnoise:	1.0000
 satval:		65535
 nx:		1024
@@ -391,7 +405,7 @@ fltkey:		FILTER2
 obstimekey:	MJD-OBS
 exptimekey:	EXPTIME
 bitpixkey: 	BITPIX
-airmasskey: 
+airmasskey:
 
 [JN]
 code:		JN
@@ -404,7 +418,7 @@ fltkey:		FILTERS
 obstimekey:	DATE-OBS
 exptimekey:	EXPOSURE
 bitpixkey: 	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [ALFOSC]
@@ -418,7 +432,7 @@ fltkey:		ALFLTNM FAFLTNM
 obstimekey:	DATE-OBS
 exptimekey:	EXPTIME
 bitpixkey: 	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [MODS1R]
@@ -432,7 +446,7 @@ fltkey:		FILTNAME
 obstimekey:	MJD-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [PanSTARRS]
@@ -446,7 +460,7 @@ fltkey:		FPA.FILTERID
 obstimekey:     MJD-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [NOTCAM]
@@ -460,7 +474,7 @@ fltkey:		NCFLTNM1 NCFLTNM2
 obstimekey:	DATE-OBS
 exptimekey:	EXPTIME NCOMBINE
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [ARIES130cm]
@@ -470,11 +484,11 @@ readnoise:	2.0
 satval:		65535
 nx:		2048
 ny:		2048
-fltkey:		
+fltkey:
 obstimekey:	FRAME
 exptimekey:	EXPOSURE
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 [EFOSC2]
 code:		EFOSC2
@@ -483,11 +497,11 @@ readnoise:	1.0
 satval:		65535
 nx:		1030
 ny:		1030
-fltkey:		
+fltkey:
 obstimekey:	MJD-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [LOTIS]
@@ -501,7 +515,7 @@ fltkey:		FILTER
 obstimekey:	DATE-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [SWIFTtest]
@@ -515,7 +529,7 @@ fltkey:		FILTER
 obstimekey:	DATE-OBS
 exptimekey:	EXPOSURE
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 
@@ -530,7 +544,7 @@ fltkey:		FILTER
 obstimekey:	JD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [Rozhen2m]
@@ -544,7 +558,7 @@ fltkey:		FILTER
 obstimekey:	DATE-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 [Rozhen50]
 code:		Rozhen50
@@ -557,7 +571,7 @@ fltkey:		FILTER
 obstimekey:	DATE-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 [StuParker]
 code:		SP
@@ -566,11 +580,11 @@ readnoise:	1.0
 satval:		65535
 nx:		1000
 ny:		1000
-fltkey:		
+fltkey:
 obstimekey:	DATE-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 
@@ -585,7 +599,7 @@ fltkey:		FILTER
 obstimekey:	JD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 [TV]
 code:		TV
@@ -598,7 +612,7 @@ fltkey:		FILTER
 obstimekey:	JD
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey: 
+airmasskey:
 
 
 [WFCAM]
@@ -611,8 +625,9 @@ ny:		4096
 fltkey:		FILTER
 obstimekey:	MJD-OBS
 exptimekey:	EXP_TIME
+totalexptime: EXP_TIME NEXP NJITTER NUSTEP
 bitpixkey:	BITPIX
-airmasskey:	AMSTART AMEND 
+airmasskey:	AMSTART AMEND
 
 [UFTI]
 code:		UFTI
@@ -625,17 +640,17 @@ fltkey:		FILTER
 obstimekey:	MJD-OBS
 exptimekey:	EXP_TIME
 bitpixkey:	BITPIX
-airmasskey:	AMSTART AMEND 
+airmasskey:	AMSTART AMEND
 
 [FORS2]
 code:		FORS2
-gain: 		1.0	
+gain: 		1.0
 readnoise:	1.0
 satval:		65535
 nx:		2048
 ny:		2048
-fltkey:		
+fltkey:
 obstimekey:	MJD-OBS
 exptimekey:	EXPTIME
 bitpixkey:	BITPIX
-airmasskey:	
+airmasskey:

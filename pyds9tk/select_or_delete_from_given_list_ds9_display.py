@@ -6,8 +6,7 @@ import numpy as np
 from astropy.table import Table
 
 
-
-def delete_entry_from_given_table_on_ds9_display(fitsimage, inputfile_table, table_format= 'ascii.fast_no', x_col =0, y_col = 1, coordinate_system = 'image', ):
+def delete_entry_from_given_table_on_ds9_display(fitsimage, inputfile_table, table_format= 'ascii.fast_no_header', x_col =0, y_col = 1, coordinate_system = 'image', ):
 	'''
 	INPUTS:
 		fitsimage:

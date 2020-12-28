@@ -1,14 +1,8 @@
-#! /usr/bin/python
-
-import numpy as np
 from pyraf import iraf
-from iraf import digiphot,apphot,daophot
-import os
-from astropy.io import fits
-from astropy.table import Table
+from iraf import daophot
+from iraf import psf
 
-
-def daophot_psf_iraf(image, photfile, pstfile, psfimage, opstfile=None, groupfile=None, psfrad=15.0, varorder=0):
+def daophot_psf_iraf(image, photfile, pstfile, psfimage, opstfile=None, groupfile=None, psfrad=15.0, fitrad=9, varorder=0):
 	'''
 	INPUTS:
 		image:
@@ -20,12 +14,12 @@ def daophot_psf_iraf(image, photfile, pstfile, psfimage, opstfile=None, groupfil
 		psfrad: the radius of the circle in scale units within which the PSF model is dedined
 	'''
 
-	daophot.datapars.unlearn()
-	daophot.daopars.unlearn()
-	daophot.daopars.varorder=varorder
-	daophot.psf.unlearn()
-
-	daophot.daopars.psfrad = psfrad
+	psf.datapars.unlearn()
+	psf.daopars.unlearn()
+	psf.daopars.varorder=varorder
+	psf.daopars.psfrad = psfrad
+	psf.daopars.fitrad = fitrad
+	psf.unlearn()
 
 	if opstfile is None:
 		opstfile = 'default'
@@ -33,7 +27,10 @@ def daophot_psf_iraf(image, photfile, pstfile, psfimage, opstfile=None, groupfil
 	if groupfile is None:	
 		groupfile = 'default'
 
-	daophot.psf(image=image, photfile=photfile, pstfile=pstfile, psfimage=psfimage, opstfile=opstfile, groupfile=groupfile, matchbyid='yes', interactive='no', mkstars='no', showplots='no', verify='no', update='no')	
+	if os.path.exists(psfimage):
+		os.remove(psfimage)
+
+	psf(image=image, photfile=photfile, pstfile=pstfile, psfimage=psfimage, opstfile=opstfile, groupfile=groupfile, matchbyid='yes', interactive='no', mkstars='no', showplots='no', verify='no', update='no')	
 
 
 

@@ -192,28 +192,6 @@ if __name__ == "__main__":
 	'''
 	import sys
 		
-	
-	
-	#if len(sys.argv) == 1:
-	#	show_help = True
-	#	input_image = ''
-	#else:
-	#	show_help = False
-	#	input_image = sys.argv[1]
-
-	#if input_image == '--help' or show_help:
-	#	print "Usage: select_source_on_ds9.py input_image output_list [source_list_file]"
-	#	print "where source_list_file is optional; if provided, only sources in the given list can be selected"
-	#	sys.exit()	
-
-	#output_list = sys.argv[2]
-	#if len(sys.argv) >3:
-	#	source_list_file = sys.argv[3]
-	#	source_list_given  = True
-	#else:
-	#	source_list_file = None
-	#	source_list_given = False
-
 	import optparse
 	parser = optparse.OptionParser()
 		

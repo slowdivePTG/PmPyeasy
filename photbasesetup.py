@@ -34,8 +34,8 @@ class basesetup:
 		self.second_targets_info = None
 		self.second_targets_file = os.path.join(self.conffile_dir, 'targets_info_lookup_table_02.txt')
 		self.telescopes_info_file = os.path.join(self.conffile_dir,'telescopes.info')
-	        self.telescopes_available = self.__get_telescopes_names(self.telescopes_info_file)
-                self.telescopes_info = {}
+		self.telescopes_available = self.__get_telescopes_names(self.telescopes_info_file)
+		self.telescopes_info = {}
 		self.registerd_photometry_info_file = os.path.join(self.conffile_dir,'photometry_objects.info')
 		self.registerd_photometry_objects = self.__get_registerd_photometry_objects(self.registerd_photometry_info_file)
 		self.registerd_photometry_objects_info = {}
@@ -47,7 +47,7 @@ class basesetup:
 		'''
 		self.__init_attributes__()
 		for telescope in self.telescopes_available:
-                	self.telescopes_info[telescope] = self.__ConfigParser_get_options_given_section(self.telescopes_info_file,telescope)
+			self.telescopes_info[telescope] = self.__ConfigParser_get_options_given_section(self.telescopes_info_file,telescope)
 
 		for photometry_object in self.registerd_photometry_objects:
 			self.registerd_photometry_objects_info[photometry_object] = self.__ConfigParser_get_options_given_section(self.registerd_photometry_info_file,photometry_object)

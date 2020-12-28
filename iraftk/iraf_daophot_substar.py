@@ -1,12 +1,8 @@
 #! /usr/bin/python
 
-import numpy as np
 from pyraf import iraf
-from iraf import digiphot,apphot,daophot
-import os
-from astropy.io import fits
-from astropy.table import Table
-
+from iraf import daophot
+from iraf import substar
 
 def daophot_substar_iraf(image, photfile, exfile, psfimage, subimage):
 	'''
@@ -18,11 +14,11 @@ def daophot_substar_iraf(image, photfile, exfile, psfimage, subimage):
 		subimage:
 	'''
 
-	daophot.datapars.unlearn()
-	daophot.daopars.unlearn()
-	daophot.substar.unlearn()
+	substar.datapars.unlearn()
+	substar.daopars.unlearn()
+	substar.unlearn()
 
-	daophot.substar(image=image, photfile=photfile, exfile=exfile, psfimage=psfimage, subimage=subimage,  verify='no', update='no')	
+	substar(image=image, photfile=photfile, exfile=exfile, psfimage=psfimage, subimage=subimage,  verify='no', update='no')	
 
 
 

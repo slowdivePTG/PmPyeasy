@@ -1,27 +1,24 @@
 #! /usr/bin/python
 
 #aperture photometry with iraf/apphot
-
-import numpy as np
-from pyraf import iraf
-from iraf import digiphot,apphot
 import os
-from astropy.io import fits, ascii
-from astropy.table import Table
+from pyraf import iraf
+from iraf import daophot
+from iraf import phot
+from iraf_utils import iraf_get_default_filename
 
-    
-def apphot_phot_iraf(image, centroid_algorithm='centroid', coo_list='default', ap_list='default',coo_list_format='daophot', fwhmpsf=3, sigma=10, app=8, skyin=15, wsky=15, sky_sigma_down=3, sky_sigma_up=3, readnoise=5, epadu=1, datamin = 'INDEF', datamax = 'INDEF', emission='yes', zeropt=25, single_point=True, outkeys=None):
-    '''    
-    INPUTS:
+def daophot_phot_iraf(image, centroid_algorithm='centroid', coo_list='default', output='default', fwhmpsf=3, sigma=10, app=8, skyin=15, wsky=15, sky_sigma_down=3, sky_sigma_up=3, readnoise=5, epadu=1, datamin = 'INDEF', datamax = 'INDEF', emission='yes', zeropt=25):
+	'''
+	INPUTS:
 	image:
-	centroid_algorithm: 'none', 'centroid', 'gauss' or 'ofilter' 
+	centroid_algorithm: 'none', 'centroid', 'gauss' or 'ofilter'
 	coo_list: the input coordinate list(s); default: image.coo.?
-	ap_list: output photometry file(s); default: image.mag.?
+	output: output photometry file(s); default: image.mag.?
 	fwhmpsf: FWHM of the PSF in scale unit
 	sigma: standard deiation of background in counts
 	app:  aperture radius(radii) in scale unit
 	skyin: inner sky annulus radius
-	wsky: the width of sky annulus 
+	wsky: the width of sky annulus
 	sky_sigma_down: lower k-sigma rejection limit in sky sigma
 	sky_sigma_up: upper k-sigma rejection limit in sky sigma
 	readnoise: CCD readout noise in electrons
@@ -29,8 +26,8 @@ def apphot_phot_iraf(image, centroid_algorithm='centroid', coo_list='default', a
 	datamin: minimum good data value
 	datamax: maximum good data value
 
-    OUTPUTS:
-	The full photometry will be saved in aperture photometry file ap_list, and for each star measured the following record is written :
+	OUTPUTS:
+	The full photometry will be saved in aperture photometry file output, and for each star measured the following record is written :
 
 	image  xinit  yinit  id  coords  lid
 	xcenter  ycenter  xshift  yshift  xerr  yerr  cier cerror
@@ -46,100 +43,87 @@ def apphot_phot_iraf(image, centroid_algorithm='centroid', coo_list='default', a
 	Itime is the exposure time, xairmass is self-evident, ifilter is an id string identifying the filter used in the observations, and otime is a string containing the time of the observation in whatever units the user has set up.
 	Rapert, sum, area, and flux are the radius of the aperture in scale units, the total number of counts including sky in the aperture, the area of the aperture in square pixels, and the total number of counts excluding sky in the aperture.
 	Mag and merr are the magnitude and error in the magnitude in the aperture (see below).
-	
+
 	        flux = sum - area * msky
        		mag = zmag - 2.5 * log10 (flux) + 2.5 * log10 (itime)
         	merr = 1.0857 * err / flux
          	err = sqrt (flux / epadu + area * stdev**2 + area**2 * stdev**2 / nsky)
-    '''
+	'''
+	phot.datapars.unlearn()
+	phot.datapars.scale = 1.0
+	phot.datapars.fwhmpsf = fwhmpsf
+	phot.datapars.emission = emission
+	phot.datapars.sigma = sigma
+	if datamin is None:
+		datamin = 'INDEF'
+	if datamax is None:
+		datamax = 'INDEF'
+	phot.datapars.datamin = datamin
+	phot.datapars.datamax = datamax
+	phot.datapars.noise = 'poisson'
+	phot.datapars.ccdread = ''
+	phot.datapars.readnoise = readnoise
+	phot.datapars.itime = 1.0
+	phot.datapars.epadu = epadu
+	phot.datapars.xairmass = 'INDEF'
+	phot.datapars.ifilter = 'INDEF'
+	phot.datapars.otime = 'INDEF'
 
-    apphot.phot.unlearn()
-
-    apphot.datapars.unlearn()
-    apphot.datapars.scale = 1.0
-    apphot.datapars.fwhmpsf = fwhmpsf
-    apphot.datapars.emission = emission
-    apphot.datapars.sigma = sigma
-
-    apphot.datapars.datamin = datamin
-    apphot.datapars.datamax = datamax
-
-    apphot.datapars.noise = 'poisson'
-
-    apphot.datapars.ccdread = ''
-    apphot.datapars.readnoise = readnoise
-    apphot.datapars.itime = 1.0
-    apphot.datapars.epadu = epadu
-    apphot.datapars.xairmass = 'INDEF'
-    apphot.datapars.ifilter = 'INDEF'
-    apphot.datapars.otime = 'INDEF'
-    
-    # iraf.digiphot.apphot.centerpars : 
-    apphot.centerpars.calgorithm = centroid_algorithm
-    apphot.centerpars.cbox = 10.0
-    apphot.centerpars.cthreshold = 0.0
-    apphot.centerpars.minsnratio = 1.0
-    apphot.centerpars.cmaxiter = 10.0
-    apphot.centerpars.maxshift = 2.0
-    apphot.centerpars.clean = False
-    apphot.centerpars.rclean = 1.0
-    apphot.centerpars.rclip = 2.0
-    apphot.centerpars.kclean = 3.0
-    apphot.centerpars.mkcenter = False
-
-    # iraf.digiphot.apphot.fitskypars : 
-    apphot.fitskypars.unlearn()
-    apphot.fitskypars.salgorithm = 'median'
-    apphot.fitskypars.annulus = skyin
-    apphot.fitskypars.dannulus = wsky
-    apphot.fitskypars.skyvalue = 0.0
-    apphot.fitskypars.smaxiter = 10.0
-    apphot.fitskypars.sloclip = 0.0
-    apphot.fitskypars.shiclip = 0.0
-    apphot.fitskypars.snreject = 50.0
-    apphot.fitskypars.sloreject = sky_sigma_down
-    apphot.fitskypars.shireject = sky_sigma_up
-    apphot.fitskypars.khist = 3.0
-    apphot.fitskypars.binsize = 0.1
-    apphot.fitskypars.smooth = False
-    apphot.fitskypars.rgrow = 0.0
-    apphot.fitskypars.mksky = False
-
-    # iraf.digiphot.apphot.photpars : 
-    apphot.photpars.unlearn()
-    apphot.photpars.weighting = 'constant'
-    apphot.photpars.apertures = app
-    apphot.photpars.zmag = zeropt
-    apphot.photpars.mkapert = False
-          
-    photparams = {
-        'radplot':False,
-        }
-       
-    if os.path.exists(ap_list): 
-        os.remove(ap_list) 
-
-    # run photometry using the newly created coxyfile for providing input coordinates
-    apphot.phot(image=image, skyfile='', output=ap_list, coords=coo_list, verify='no',interactive='no',verbose=True, Stdout=1, **photparams)
-    
-    #get the photometric data from the apphot output    
-    if outkeys is not None:
-	if ap_list == 'default':
-		for i in np.arange(100)[::-1]:
-			ap_list = image+'.mag.'+str(i)
-			if os.path.exists(ap_list):
-				break
-	photret = ascii.read(ap_list, format='daophot')
-	seletedphot = photret[outkeys]
-	for colname in seletedphot.keys():
-		seletedphot[colname]=seletedphot[colname].filled(fill_value=99.99)
-    else:	
-	seletedphot = None
 	
-    return seletedphot
+	phot.centerpars.unlearn()# iraf.digiphot.daophot.centerpars :
+	phot.centerpars.calgorithm = centroid_algorithm
+	phot.centerpars.cbox = 10.0
+	phot.centerpars.cthreshold = 0.0
+	phot.centerpars.minsnratio = 1.0
+	phot.centerpars.cmaxiter = 10.0
+	phot.centerpars.maxshift = fwhmpsf/2.0
+	phot.centerpars.clean = False
+	phot.centerpars.rclean = 1.0
+	phot.centerpars.rclip = 2.0
+	phot.centerpars.kclean = 3.0
+	phot.centerpars.mkcenter = False
+
+	
+	phot.fitskypars.unlearn()#iraf.digiphot.daophot.fitskypars :
+	phot.fitskypars.salgorithm = 'median'
+	phot.fitskypars.annulus = skyin
+	phot.fitskypars.dannulus = wsky
+	phot.fitskypars.skyvalue = 0.0
+	phot.fitskypars.smaxiter = 10.0
+	phot.fitskypars.sloclip = 0.0
+	phot.fitskypars.shiclip = 0.0
+	phot.fitskypars.snreject = 50.0
+	phot.fitskypars.sloreject = sky_sigma_down
+	phot.fitskypars.shireject = sky_sigma_up
+	phot.fitskypars.khist = 3.0
+	phot.fitskypars.binsize = 0.1
+	phot.fitskypars.smooth = False
+	phot.fitskypars.rgrow = 0.0
+	phot.fitskypars.mksky = False
+
+	
+	phot.photpars.unlearn() #iraf.digiphot.daophot.photpars :
+	phot.photpars.weighting = 'constant'
+	phot.photpars.apertures = app
+	phot.photpars.zmag = zeropt
+	phot.photpars.mkapert = False
+
+	photparams = {'radplot':False}
+
+	if os.path.exists(output):
+	    os.remove(output)
+
+	phot.unlearn()
+	phot(image=image, skyfile='', output=output, coords=coo_list, verify='no',interactive='no',verbose=True, Stdout=1, **photparams)
+	#'IMAGE', 'XINIT', 'YINIT', 'ID', 'COORDS', 'LID', 'XCENTER','YCENTER', 'XSHIFT', 'YSHIFT', 'XERR', 'YERR', 'CIER', 'CERROR',
+	#'MSKY', 'STDEV', 'SSKEW', 'NSKY', 'NSREJ', 'SIER', 'SERROR','ITIME', 'XAIRMASS', 'IFILTER', 'OTIME', 'RAPERT', 'SUM', 'AREA',
+	#'FLUX', 'MAG', 'MERR', 'PIER', 'PERROR'
 
 
-if __name__ == "__main__":	
+
+
+if __name__ == "__main__":
+	from astropy.io import fits,ascii
 	import optparse
 	parser = optparse.OptionParser()
 
@@ -155,8 +139,8 @@ if __name__ == "__main__":
 	def_coor = 'default'
 	parser.add_option('--coor', dest='coor', type='string', default=def_coor, help='input coordinate list(s); default: %s.coo.?'%def_inputimage)
 
-	def_apphotoutput = 'default'
-	parser.add_option('--apphot_output', dest='apphot_output', type='string', default=def_apphotoutput, help='iraf/apphot internal output file; default: %s.mag.?'%def_inputimage)
+	def_daophotoutput = 'default'
+	parser.add_option('--daophot_output', dest='daophot_output', type='string', default=def_daophotoutput, help='iraf/daophot internal output file; default: %s.mag.?'%def_inputimage)
 
 	def_centroid = 'centroid'
 	parser.add_option('--centroid', dest='centroid', type='string', default=def_centroid, help='centroid algorithm, valid inputs are centroid, none, gauss and ofilter; default: %s'%def_centroid)
@@ -179,7 +163,7 @@ if __name__ == "__main__":
 
 	def_sigma = 10
 	parser.add_option('--sigma', dest = 'sigma', type = float , default= def_sigma, help='standard of deviation of background in counts; default: %s'%def_sigma )
-	
+
 	def_datamin = 'INDEF'
 	parser.add_option('--datamin', dest = 'datamin', type = "string", default= def_datamin, help='minimum good value; default: %s'%def_datamin )
 
@@ -199,24 +183,16 @@ if __name__ == "__main__":
 	def_output = ''
 	parser.add_option('-o','--output', dest='output', type='string', default=def_output, help='the filename of the output file where the selected record of the photometry will be saved; default: %s'%def_output)
 
-	def_daophot_format= False
-	parser.add_option('-d', '--daophot', dest='daophot', action="store_true", default=def_daophot_format, help="whether the input of the source list are in default daophot format")
-
 	options, remainder = parser.parse_args()
 
 	input_image = options.input_image
 	centroid_algorithm = options.centroid
 	coo_list = options.coor
-	coo_list_format=options.daophot
-	if coo_list_format:
-		coo_list_format = 'daophot'
-	else:
-		coo_list_format = 'simptxt'
 
 	x = options.x
 	y = options.y
 
-	ap_list = options.apphot_output
+	output = options.daophot_output
 	fwhmpsf= options.fwhmpsf
 	sigma= options.sigma
 
@@ -229,7 +205,6 @@ if __name__ == "__main__":
 	if len(outkeys)==0:
 		outkeys = None
 	outfile = options.output
-
 
 	datamin= options.datamin
 	if datamin != 'INDEF':
@@ -250,23 +225,32 @@ if __name__ == "__main__":
 	if not os.path.exists(input_image):
 		raise ValueError("input image %s doesn't exist"%input_image)
 
-	single_point = False
 	if x is not None and y is not None:
 		coo_list = 'temp.coo'
 		fid = open(coo_list,'w')
 		fid.write(str(x)+' ')
 		fid.write(str(y))
 		fid.close()
-		single_point = True
 	elif coo_list == 'default':
 		print "the input coordinate list: %s.coo.?"%input_image
 	else:
 		print "the input coordinate list: %s"%coo_list
 
 
-	rettable = apphot_phot_iraf(input_image, centroid_algorithm=centroid_algorithm, coo_list=coo_list, ap_list=ap_list, coo_list_format=coo_list_format, fwhmpsf=fwhmpsf, sigma=sigma, app=app, skyin=skyin, wsky=wsky, sky_sigma_down=sky_sigma_down, sky_sigma_up=sky_sigma_up, readnoise=readnoise, epadu=epadu, datamin =datamin, datamax = datamax, single_point = single_point, outkeys=outkeys)
+	if output == 'default':
+		output = iraf_get_default_filename(input_image, 'mag')
+	daophot_phot_iraf(input_image, centroid_algorithm=centroid_algorithm, coo_list=coo_list, output=output, fwhmpsf=fwhmpsf, sigma=sigma, app=app, skyin=skyin, wsky=wsky, sky_sigma_down=sky_sigma_down, sky_sigma_up=sky_sigma_up, readnoise=readnoise, epadu=epadu, datamin =datamin, datamax = datamax)
 
-	print rettable
+	photret = ascii.read(output, format='daophot')
+	#get the photometric data from the daophot output
+	if outkeys is not None:
+		selectedphot = photret[outkeys]
+	else:
+		selectedphot = photret
+
+	for colname in selectedphot.keys():
+		selectedphot[colname]=selectedphot[colname].filled(fill_value=99.99)
+	print selectedphot
 
 	if outfile != '':
-		rettable.write(outfile, format='ascii.commented_header')
+		selectedphot.write(outfile, format='ascii.commented_header')

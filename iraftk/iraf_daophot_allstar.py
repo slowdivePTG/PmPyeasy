@@ -1,14 +1,10 @@
 #! /usr/bin/python
 
-import numpy as np
 from pyraf import iraf
-from iraf import digiphot,apphot,daophot
-import os
-from astropy.io import fits
-from astropy.table import Table
+from iraf import daophot
+from iraf import allstar
 
-
-def daophot_allstar_iraf(image, photfile, psfimage, allstarfile, rejfile, subimage, fitrad=5.0):
+def daophot_allstar_iraf(image, photfile, psfimage, allstarfile, rejfile, subimage, fitrad=5.0, psfrad=11, fitsky='yes', sannulus=8, wsannulus=10):
 	'''
 	INPUTS:
 		image: 
@@ -17,14 +13,23 @@ def daophot_allstar_iraf(image, photfile, psfimage, allstarfile, rejfile, subima
 		allstarfile: output photometry file; default image.als.?
 		rejfile: output rejection file; default image.arj.?
 		subimage: substracted image; default image.sub.?
+		fitrad:
+		psfrad:
+		fitsky: recompute group sky value during the fit?
+		sannulus: inner radius of the sky fit annulus
+		wsannulus: width of the sky fitting annulus
 	'''
 
-	daophot.datapars.unlearn()
-	daophot.daopars.unlearn()
-	daophot.daopars.fitrad = fitrad
-	daophot.allstar.unlearn()
+	allstar.datapars.unlearn()
+	allstar.daopars.unlearn()
+	allstar.daopars.fitrad = fitrad
+	allstar.daopars.psfrad = psfrad
+	allstar.daopars.fitsky = fitsky
+	allstar.daopars.sannulus = sannulus
+	allstar.daopars.wsannulus = wsannulus
+	allstar.unlearn()
 
-	daophot.allstar(image=image, photfile=photfile,  psfimage=psfimage, allstarfile=allstarfile, rejfile=rejfile, subimage=subimage, verify='no', update='no')	
+	allstar(image=image, photfile=photfile,  psfimage=psfimage, allstarfile=allstarfile, rejfile=rejfile, subimage=subimage, verify='no', update='no')	
 
 
 

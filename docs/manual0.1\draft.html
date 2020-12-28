@@ -29,11 +29,20 @@
 <li><input checked disabled type="checkbox"> <a href="#fitsh">FITSH</a></li>
 </ul>
 </li>
-<li><input disabled type="checkbox"> Examples<ul>
-<li><input disabled type="checkbox"> <a href="#smallfov">Small FOV</a></li>
+<li><input disabled type="checkbox"> <a href="#std">Standard Catalogs</a><ul>
+<li><input disabled type="checkbox"> <a href="#apass">APASS DR9</a></li>
+<li><input disabled type="checkbox"> <a href="#panstarrs">PanSTARRS DR1</a></li>
+<li><input disabled type="checkbox"> <a href="#2mass">2MASS</a></li>
+<li><input disabled type="checkbox"> <a href="#refcat2">ATLAS Refcat2</a></li>
 </ul>
 </li>
-<li><input disabled type="checkbox"> <a href="#problem">Problems</a></li>
+<li><input disabled type="checkbox"> Examples<ul>
+<li><input checked disabled type="checkbox"> <a href="#smallfov">Small FOV</a></li>
+<li><input disabled type="checkbox"> <a href="#smartsir">SMARTS-NIR</a></li>
+</ul>
+</li>
+<li><input disabled type="checkbox"> <a href="#problem">Problems and Solutions</a></li>
+<li><input disabled type="checkbox"> <a href="#routine">Typical Routine</a></li>
 </ul>
 <div style="page-break-after: always; break-after: page;"></div>
 
@@ -63,9 +72,28 @@
 <td><a href="5">grtrans</a></td>
 <td>Transforms a single coordinate list or derives a best-fit transformation between two coordinate lists.</td>
 </tr>
+<tr>
+<td><a href="6">fitrans</a></td>
+<td>Performs generic geometric (spatial) transformations on the input image.</td>
+</tr>
 </tbody></table>
 <div style="page-break-after: always; break-after: page;"></div>
 
+<h2 id="standard-catalog-a-name-std-a-">Standard Catalog <a name="std"></a></h2>
+<h4 id="sdss">SDSS</h4>
+<p><a href="5">SDSS photometric flux calibration</a></p>
+<h4 id="apass-a-name-apass-a-"><a href="1">APASS</a> <a name="apass"></a></h4>
+<p><a href="6">The AAVSO Photometric All-Sky Survey</a> <a href="7"><em>DR9</em></a></p>
+<p>The APASS photometric survey covers the whole sky in five optical bands: B, V (tied to the equatorial standards of <a href="8">Landolt 2009</a>) and g, r, i (tied to the 158 primary standards given by <a href="9">Smith et al. 2002</a>, which define the Sloan photometric system). Each telescope covers 9 square degrees of sky with 2.5 arcsec pixels, with the main survey taken with B,V,g&apos;,r&apos;,i&apos; filters and covering the magnitude range 10$&lt;$V$&lt;$17.</p>
+<p>APASS use a 15 arcsec diameter aperture for photometry, so blends will cause photometric errors as well as astrometric ones.</p>
+<h4 id="panstarrs-a-name-panstarrs-a-"><a href="2">PanSTARRS</a> <a name="panstarrs"></a></h4>
+<h4 id="2mass-a-name-2mass-a-"><a href="3">2MASS</a> <a name="2mass"></a></h4>
+<h4 id="atlas-refcat2-a-name-refcat2-a-"><a href="4">ATLAS Refcat2</a> <a name="refcat2"></a></h4>
+<p>Key information from the paper:</p>
+<blockquote>
+<p>The sources of g,r,i and z photometry include Pan-STARRS DR1, the ATLAS Pathfinder photometry project, ATLAS reflattened APASS data, SkyMapper DR1, APASS DR9, the Tycho-2 catalog, and the Yale Bright Star Catalog.
+We will describe our Pathfinder observations and reductions, out APASS rereductions, the procedure we followed for each catalog <strong>to bring it onto the Pan-STARRS griz-bandpass system</strong>, and the production of the final catalog.</p>
+</blockquote>
 <h2 id="examples">Examples</h2>
 <h4 id="1-small-fov-case-a-name-smallfov-a-">1. Small FOV Case <a name="smallfov"></a></h4>
 <p>Situations occur when the images have small FOV and it&apos;s not likely to get the WCS solution easily. Then matching between stars in template images and standard stars from external catalog can not be done automatically where manual work required.</p>
@@ -95,8 +123,65 @@
 </center>
 
 
-<h2 id="problems-a-name-problem-a-">Problems <a name="problem"></a></h2>
+<h4 id="2-smarts-nir-a-name-smartsir-a-">2. SMARTS-NIR <a name="smartsir"></a></h4>
+<p>Photometry for SMARTS NIR images should be the most annoying work...</p>
+<ul>
+<li><p>First, do sky subtraction:</p>
+<blockquote>
+<p>sn.smarts_nir_flt_image_reduction_sky_substraction(...)</p>
+</blockquote>
+</li>
+<li><p>Then try to get the bkg and fwhm of the images:
+(the typical routine will very likely fail...)</p>
+</li>
+<li><p>Do PSF photometry
+improper bkg value (eg. 0) and fwhm (too large) will cause the PSF photometry task fail</p>
+</li>
+<li><p>Assign one template image to the images in the filter then prepare the reference star mag list</p>
+<blockquote>
+<p>sn.get_template_reference_mags_flt(...)</p>
+</blockquote>
+</li>
+<li><p>Relative calibration:</p>
+<blockquote>
+<p>sn.<em>photometry__get</em>relative_mag_single_manual_match(...)</p>
+</blockquote>
+</li>
+<li><p>Calibration to 2mass:</p>
+<blockquote>
+<p>sn.<em>photometry__get</em>tpl_calibrated_mag_manual_method(...)</p>
+</blockquote>
+</li>
+</ul>
+<p>Below are one-by-one night reduction procedures:</p>
+<blockquote>
+<p>nights_all, nights_flt, nights_flt_unique = sn.smarts_obs_nights_stat(&apos;J&apos;)</p>
+</blockquote>
+<p>Check the nights available in nights_flt_unique</p>
+<blockquote>
+<p>night_imgs = sn.smarts_select_photret_given_night(&apos;J&apos;, &apos;160821&apos;)</p>
+</blockquote>
+<p>Check the info of all images observed on the same night</p>
+<blockquote>
+<p>sn.smarts_nir_flt_image_reduction_sky_substraction(night_imgs, ngroup=N)</p>
+</blockquote>
+<p>Do the photometry</p>
+<blockquote>
+<p>sn.smarts_renew_fwhm_psfphot_same_night(flt, fwhm, night=None, phottable=None)</p>
+</blockquote>
+<p>Another routine:</p>
+<h4 id="3-ukirt-wfcam-nir-photometry">3. UKIRT/WFCAM NIR photometry</h4>
+<p>First, WFCAM image has multiple (4) extentions. To</p>
+<h4 id="4-image-subtraction">4. Image subtraction</h4>
+<ul>
+<li>refence and input image not the same size<blockquote>
+</blockquote>
+-</li>
+</ul>
+<h2 id="problems-and-solutions-a-name-problem-a-">Problems and Solutions <a name="problem"></a></h2>
 <h4 id="hotpants-fails-for-image-with-low-background-values">hotpants fails for image with low background values</h4>
+<h2 id="typical-routine-a-name-routine-a-">Typical Routine <a name="routine"></a></h2>
+<h3 id="rp-image-subtraction">RP image subtraction</h3>
 </article></div><div style="background-color: #b4b2b2;width: 50px;height:50px;line-height: 50px;text-align: center;position: fixed;bottom: 10px;right: 10px;padding-top:5px;" onclick="document.documentElement.scrollTop = document.body.scrollTop =0;">
   <svg t="1533629773982" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1035" xlink="http://www.w3.org/1999/xlink" width="40" height="40"><defs><style type="text/css">@font-face { font-family: uc-nexus-iconfont; src: url("chrome-extension://pogijhnlcfmcppgimcaccdkmbedjkmhi/res/font_9qmmi8b8jsxxbt9.woff") format("woff"), url("chrome-extension://pogijhnlcfmcppgimcaccdkmbedjkmhi/res/font_9qmmi8b8jsxxbt9.ttf") format("truetype"); }
   </style></defs><path d="M536.255427 195.182354c-7.804756-7.804756-17.966187-11.615549-28.311813-11.615549-9.43693 0-18.874883 3.449565-26.496467 10.163477-2.360767 1.452071-4.356214 3.267417-6.352685 5.262864L218.47792 455.611735c-15.607466 15.60542-15.607466 40.834011 0 56.43943 15.607466 15.607466 41.558511 15.607466 57.167001 0l193.46013-192.733583 0 600.526219c0 22.1423 17.787108 39.927361 39.927361 39.927361 22.140253 0 39.927361-17.785062 39.927361-39.927361L548.959773 319.317583 737.15704 508.422522c15.607466 15.607466 40.469714 15.607466 56.078203 0 15.607466-15.607466 15.425318-40.834011-0.182149-56.441477L536.255427 195.182354 536.255427 195.182354z" p-id="1036" fill="#333"/><path d="M101.784174 143.097092l816.674071 0c22.140253 0 39.925315-17.785062 39.925315-39.927361 0-22.140253-17.784038-39.925315-39.925315-39.925315L101.784174 63.244416c-22.140253 0-39.927361 17.785062-39.927361 39.925315C61.856813 125.31203 79.643921 143.097092 101.784174 143.097092L101.784174 143.097092z" p-id="1037" fill="#333"/></svg>

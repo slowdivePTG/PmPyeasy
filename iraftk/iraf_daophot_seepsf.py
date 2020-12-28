@@ -1,21 +1,17 @@
 #! /usr/bin/python
 
-import numpy as np
 from pyraf import iraf
-from iraf import digiphot,apphot,daophot
-import os
-from astropy.io import fits
-from astropy.table import Table
+from iraf import daophot
+from iraf import seepsf
 
-
-def daophot_seepsf_iraf(psfimage, outputimg):
+def daophot_seepsf_iraf(psfimage, outputimg, xpsf='INDEF', ypsf='INDEF'):
 	'''
 	INPUTS:
 		psfimage:
 		outputimg:
 	'''
-
-	daophot.seepsf(psfimage, outputimg)
+	
+	seepsf(psfimage, outputimg, xpsf=xpsf, ypsf=ypsf)
 
 
 

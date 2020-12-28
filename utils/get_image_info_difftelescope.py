@@ -1,8 +1,8 @@
-from common import __get_fits_info 
+from common import __get_fits_info
 import os
 from astropy.time import Time
 
-#get image information 
+#get image information
 #
 
 def get_obstime(img,obstime_key,telescope):
@@ -63,6 +63,8 @@ def get_obstime(img,obstime_key,telescope):
 		obstime = get_obstime_STRAIGHT(img,obstime_key)
 	elif telescope == 'REM':
 		obstime = get_obstime_MJD(img,obstime_key)
+	elif telescope == 'REM-NIR':
+		obstime = get_obstime_MJD(img,obstime_key)
 	elif telescope == 'GS':
 		obstime = get_obstime_STRAIGHT(img,obstime_key)
 	elif telescope == 'RP':
@@ -109,7 +111,7 @@ def get_obstime(img,obstime_key,telescope):
 
 
 def get_obstime_OAUV(img,obstime_key, extension=None):
-	
+
 	fitsinfo = __get_fits_info(img,obstime_key, extension=extension)
 	tt = Time(fitsinfo[obstime_key])
 
@@ -135,9 +137,9 @@ def get_obstime_weihai(img, obstime_key):
 
 def get_obstime_GC(img, obstime_key):
 	'''
-	For GC images, if the image is co-added image then MIDPOINT exists which is the at the middle of the exposure and will be used as observation time 
+	For GC images, if the image is co-added image then MIDPOINT exists which is the at the middle of the exposure and will be used as observation time
 	otherwise the JD value in the header will be used directly
-	'''	
+	'''
 	key1 = obstime_key.split()[0]
 	key2 = obstime_key.split()[1]
 
@@ -156,13 +158,13 @@ def get_obstime_GC(img, obstime_key):
 
 
 def get_obstime_RK(img,obstime_key):
-	
+
 	key1 = obstime_key.split()[0]
 	key2 = obstime_key.split()[1]
 
 	fitsinfo = __get_fits_info(img,obstime_key.split())
 	tt = Time(fitsinfo[key1] + 'T' + fitsinfo[key2])
-	
+
 	obstime = tt.jd
 
 	return obstime
@@ -254,6 +256,8 @@ def get_exptime(img,exptime_key,telescope):
 		exptime = get_exptime_STRAIGHT(img,exptime_key)
 	elif telescope == 'REM':
 		exptime = get_exptime_STRAIGHT(img,exptime_key)
+	elif telescope == 'REM-NIR':
+		exptime = get_exptime_STRAIGHT(img,exptime_key)
 	elif telescope == 'GS':
 		exptime = get_exptime_STRAIGHT(img,exptime_key)
 	elif telescope == 'RP':
@@ -298,10 +302,10 @@ def get_exptime(img,exptime_key,telescope):
 	return exptime
 
 
-	
+
 
 def get_exptime_STRAIGHT(img,exptime_key, extension=None):
-	
+
 	fitsinfo = __get_fits_info(img,exptime_key, extension=extension)
 	exptime = fitsinfo[exptime_key]
 
@@ -321,6 +325,26 @@ def get_exptime_NOTCAM(img, exptime_key):
 	exptime = sexptime * ncombine
 
 	return exptime
+
+def get_exptime_WFCAM_total(img, exptime_keys):
+	'''
+	Final exptime = EXP_TIME*NEXP*NJITTER*NUSTEP
+	'''
+	key1 = exptime_keys.split()[0]
+	key2 = exptime_keys.split()[1]
+	key3 = exptime_keys.split()[2]
+	key4 = exptime_keys.split()[3]
+
+	fitsinfo = __get_fits_info(img, exptime_keys.split())
+
+	sexptime = fitsinfo[key1]
+	nexp = fitsinfo[key2]
+	njitter = fitsinfo[key3]
+	nustep = fitsinfo[key4]
+
+	totalexptime = sexptime * nexp * njitter*nustep
+
+	return totalexptime
 
 
 
@@ -379,6 +403,8 @@ def get_filter(img,fltkey,telescope):
 	elif telescope == 'SMARTS-IR':
 		flt = get_filter_SMART_IR(img,fltkey)
 	elif telescope == 'REM':
+		flt = get_filter_REM(img,fltkey)
+	elif telescope == 'REM-NIR':
 		flt = get_filter_REM(img,fltkey)
 	elif telescope == 'GS':
 		flt = get_filter_GS(img, fltkey)
@@ -444,7 +470,7 @@ def get_filter_UFTI(img, fltkey):
 	if flt == 'K98':
 		flt = 'K'
 
-	return flt	
+	return flt
 
 def get_filter_WFCAM(img, fltkey):
 	fitsinfo = __get_fits_info(img, fltkey)
@@ -497,7 +523,7 @@ def get_filter_IRIDA(img, fltkey):
 		flt = 'rp'
 	if flt =='i':
 		flt = 'ip'
-	
+
 	return flt
 
 def get_filter_TV(img, fltkey):
@@ -528,12 +554,12 @@ def get_filter_LOTIS(img, fltkey, extension=None):
 
 
 def get_filter_EFOSC2(img,fltkey):
-	
+
 	fltkey = 'HIERARCH ESO INS FILT1 NAME'
 	fitsinfo = __get_fits_info(img, fltkey)
 
 	flt = fitsinfo['HIERARCH ESO INS FILT1 NAME']
-	
+
 	flt = flt.split('#')[0]
 
 	return flt
@@ -550,7 +576,7 @@ def get_filter_ARIES130cm(img, fltkey):
 
 	flt_seg = img_real.split('_')[-2]
 	flt = flt_seg[0]
-	
+
 	if flt == 'u':
 		flt = 'U'
 	elif flt == 'b':
@@ -592,7 +618,7 @@ def get_filter_GC(img,fltkey):
 	if flt == 'OG530':
 		flt = 'R'
 
-	flt = flt.replace("'",'p')	
+	flt = flt.replace("'",'p')
 
 	return flt
 
@@ -690,13 +716,13 @@ def get_filter_SDSS(img,fltkey):
 
 	if flt == 'r':
 		flt = 'rp'
- 
+
 	if flt == 'i':
 		flt = 'ip'
-	
+
 	if flt == 'z':
 		flt = 'zp'
-	
+
 	return flt
 
 
@@ -734,11 +760,11 @@ def get_filter_iowa(img,fltkey):
 	else:
 		print img
 		raise KeyError("the filter information in fits header for iowa telescope is not understood, please check...")
-	
+
 	return flt
 
 def get_filter_PanSTARRS(img, fltkey):
-	
+
 	fitsinfo = __get_fits_info(img,fltkey)
 	flt = fitsinfo[fltkey]
 	flt = flt.replace(" ","")
@@ -774,7 +800,7 @@ def get_filter_MDM(img,fltkey):
 
 	fltkey1 = fltkey.split()[0]
 	fltkey2 = fltkey.split()[1]
-	
+
 
 	fitsinfo = __get_fits_info(img,fltkey.split())
 
@@ -789,7 +815,7 @@ def get_filter_MDM(img,fltkey):
 	else:
 		flt = flt1
 
-	
+
 	if flt == 'SDSS-r':
 		flt = 'rp'
 
@@ -801,7 +827,7 @@ def get_filter_MDM(img,fltkey):
 
 
 def get_filter_NOTCAM(img, fltkey):
-	
+
 	fltkey1 = fltkey.split()[0]
 	fltkey2 = fltkey.split()[1]
 
@@ -812,7 +838,7 @@ def get_filter_NOTCAM(img, fltkey):
 
 	flt2 = fitsinfo[fltkey2]
 	flt2 = flt2.replace(' ','')
-	
+
 
 	if flt1 == 'Open':
 		flt = flt2
@@ -820,7 +846,7 @@ def get_filter_NOTCAM(img, fltkey):
 		flt = flt1
 
 	print flt
-	
+
 	if flt[0] == 'J':
 		flt = 'J'
 	elif flt[0] == 'H':
@@ -831,7 +857,7 @@ def get_filter_NOTCAM(img, fltkey):
 		raise ValueError("input filter %s not suppported"%flt)
 
 	return flt
-	
+
 
 
 
@@ -840,7 +866,7 @@ def get_filter_ALFOSC(img, fltkey):
 	print img
 	fltkey1 = fltkey.split()[0]
 	fltkey2 = fltkey.split()[1]
-	
+
 
 	fitsinfo = __get_fits_info(img,fltkey.split())
 
@@ -859,13 +885,13 @@ def get_filter_ALFOSC(img, fltkey):
 	print flt
 
 	if flt[0] == 'B':
-		flt = 'B'	
+		flt = 'B'
 	elif flt[0] == 'V':
 		flt = 'V'
 	elif flt[0] == 'u':
 		flt = 'up'
 	elif flt[0] == 'g':
-		flt = 'gp'	
+		flt = 'gp'
 	elif flt[0] == 'r':
 		flt = 'rp'
 	elif flt[0] == 'i':
@@ -942,11 +968,11 @@ def get_filter_IMACS(img,fltkey):
 	if flt == 'Bessell_V2':
 		flt = 'V'
 	if flt == 'g_Sloan':
-		flt = 'gp'	
-	
+		flt = 'gp'
+
 	if flt == 'Sloan_r':
-		flt = 'rp'	
-	
+		flt = 'rp'
+
 	flt = flt.strip()
 
 	return flt
@@ -958,9 +984,9 @@ def get_filter_LDSS3C(img,fltkey):
 	fitsinfo = __get_fits_info(img,fltkey)
 	flt = fitsinfo[fltkey]
 	flt = flt.replace(' ','')
-	
+
 	if flt == 'r_Sloan':
-		flt = 'rp'	
+		flt = 'rp'
 	if flt == 'g_Sloan':
 		flt = 'gp'
 	if flt == 'i_Sloan':
@@ -1002,7 +1028,6 @@ def get_filter_DEMONEXT(img,fltkey):
 
 
 def get_filter_REM(img,fltkey):
-	
 
 	fitsinfo = __get_fits_info(img,fltkey)
 	flt = fitsinfo[fltkey]
@@ -1027,7 +1052,7 @@ def get_filter_GS(img,fltkey):
 		flt = 'B'
 	if flt == 'Red':
 		flt = 'R'
-	
+
 	return flt
 
 
@@ -1074,7 +1099,7 @@ def get_filter_LT(img,fltkey):
 	else:
 		print img
 		raise KeyError("the filter information in fits header for LT telescope is not understood, please check...")
-	
+
 	return flt
 
 
@@ -1091,25 +1116,25 @@ def get_filter_TJO(img,fltkey):
 def get_filter_SMART(img,fltkey):
 	fitsinfo = __get_fits_info(img,fltkey)
         flt = fitsinfo[fltkey]
-        
+
         flt = flt.replace(" ","")
-        
+
         return flt
 
 
 def get_filter_SMART_IR(img,fltkey):
 	fitsinfo = __get_fits_info(img,fltkey)
         flt = fitsinfo[fltkey]
-        
+
         flt = flt.replace(" ","")
-        
+
         return flt
 
 def get_bitpix(img,bitpix_key,telescope):
 	if telescope == 'WFCAM':
 		fitsinfo = __get_fits_info(img, bitpix_key, extension =1)
 		bitpix = fitsinfo[bitpix_key]
-	else:	
+	else:
 		fitsinfo = __get_fits_info(img,bitpix_key)
        	 	bitpix = fitsinfo[bitpix_key]
         return bitpix
@@ -1122,13 +1147,21 @@ def get_airmass_telescope(img, airmasskey, telescope):
 		airmass = get_airmass_WFCAM(img, airmasskey)
 	elif telescope == "LCOGT":
 		airmass = get_airmass_direct(img, airmasskey)
+	elif telescope == 'REM':
+		airmass = get_airmass_direct(img, airmasskey)
+	elif telescope == 'REM-NIR':
+		airmass = get_airmass_direct(img, airmasskey)
+	elif telescope == 'SMARTS':
+		airmass = get_airmass_direct(img, airmasskey)
+	elif telescope == 'SMARTS-IR':
+		airmass = get_airmass_direct(img, airmasskey)
 	else:
 		raise KeyError("Telescope %s is not supported yet"%telescope)
 
 	return airmass
 
 def get_airmass_direct(img, amkey):
-	
+
 	fitsinfo = __get_fits_info(img, amkey)
 	airmass = fitsinfo[amkey]
 

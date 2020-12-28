@@ -1,19 +1,18 @@
-#! /usr/bin/python
-
-import os
-import numpy as np
 from pyraf import iraf
-from iraf import apphot
+from iraf import daophot
+from iraf import daofind
 
 def daofind_iraf(input_image, output='default', starmap='',skymap='', fwhmpsf=2.5, emission=True, sigma=0, datamin='INDEF', datamax='INDEF', readnoise=0, epadu=1.0, threshold=4, nsigma=1.5, sharplo=0.2,sharphi=1.0, roundlo=-1.0, roundhi=1.0,  mkdetections=False):
 	'''
-	DAOFIND approximate the stellar point spread function with an elliptical Gaussian function, whose sigma along th semi-major axis is 0.42466*datapars.fwhmpsf/datapars.scale pixels, semi-minor to semi-major axis ratio is ratio, and major axis position angle is theta. Using this model, a convolution kernel, truncated at nsigma sigma, and normalized so as to sum to zero(?? from iraf/daofind help page), is contructed. Then the density enhancement image starmap is computed by convolving the input image with gaussian kernel. After image convolution, DAOFIND steps through starmap searching for density enhancements greater than findpars.threshold*datapars.sigma, and brighter than all other density enhancement within a semi-major axis of 0.42466*findpars.nsigma*datapars.fwhmpsf.   	
+	DAOFIND approximate the stellar point spread function with an elliptical Gaussian function, whose sigma along th semi-major axis is 0.42466*datapars.fwhmpsf/datapars.scale pixels, semi-minor to semi-major axis ratio is ratio, and major axis position angle is theta. Using this model, a convolution kernel, truncated at nsigma sigma, and normalized so as to sum to zero(?? from iraf/daofind help page), is contructed. Then the density enhancement image starmap is computed by convolving the input image with gaussian kernel. After image convolution, DAOFIND steps through starmap searching for density enhancements greater than findpars.threshold*datapars.sigma, and brighter than all other density enhancement within a semi-major axis of 0.42466*findpars.nsigma*datapars.fwhmpsf.
 
 	INPUTS:
 		input_image:  input image(s)
-		output: output coordinate file(s), default: image.coo.? 
+		output: output coordinate file(s), default: image.coo.?
+		starmap: output density enhencement image
+		skymap: output sky image
 		fwhmpsf: FWHM of the PSF in scale unit
-		emission: features are positive 
+		emission: features are positive
 		sigma: standard of deviation of background in counts
 		datamin: minimum good value
 		datamax: maximum good value
@@ -25,43 +24,42 @@ def daofind_iraf(input_image, output='default', starmap='',skymap='', fwhmpsf=2.
 
 	OUTPUTS:
 		the output coordinate file contains:
-		xcenter ycenter mag sharpness sround ground id 
+		xcenter ycenter mag sharpness sround ground id
 		where mag = -2.5*log10(peak density /detection threshold)
 	'''
-	apphot.datapars.unlearn()
+	daofind.datapars.unlearn()
+	daofind.datapars.fwhmpsf = fwhmpsf # fwhm of the psf in scale units
+	daofind.datapars.emission = emission #positive feature
+	daofind.datapars.sigma = sigma  #standard deviation of backgroud in counts
+	daofind.datapars.datamin = datamin
+	daofind.datapars.datamax = datamax
+	daofind.datapars.readnoise = readnoise #ccd readout noise in electrons
+	daofind.datapars.epadu  = epadu #gain in electrons per count
 
-	apphot.datapars.fwhmpsf = fwhmpsf # fwhm of the psf in scale units
-	apphot.datapars.emission = emission #positive feature
-	apphot.datapars.sigma = sigma  #standard deviation of backgroud in counts
-	apphot.datapars.datamin = datamin 
-	apphot.datapars.datamax = datamax
-	apphot.datapars.readnoise = readnoise #ccd readout noise in electrons
-	apphot.datapars.epadu  = epadu #gain in electrons per count
-	
-	apphot.findpars.unlearn()
-
-	apphot.findpars.threshold = threshold #threshold in sigma for feature detection
-	apphot.findpars.nsigma = nsigma    #width of convolution kernel in sigma
-	#apphot.findpars.ratio = 1.0
-	#apphot.findpars.theta = 0.0
-	apphot.findpars.sharplo = sharplo #lower bound on sharpness for feature detection
-	apphot.findpars.sharphi = sharphi #upper bound on sharpness for feature detection
-	apphot.findpars.roundlo = roundlo #lower bound on roundness for feature detection
-	apphot.findpars.roundhi = roundhi #upper bound on roundness for feature detection
-	#apphot.findpars.mkdetections = mkdetections #mark detected stars on the display
+	daofind.findpars.unlearn()
+	daofind.findpars.threshold = threshold #threshold in sigma for feature detection
+	daofind.findpars.nsigma = nsigma    #width of convolution kernel in sigma
+	#daofind.findpars.ratio = 1.0
+	#daofind.findpars.theta = 0.0
+	daofind.findpars.sharplo = sharplo #lower bound on sharpness for feature detection
+	daofind.findpars.sharphi = sharphi #upper bound on sharpness for feature detection
+	daofind.findpars.roundlo = roundlo #lower bound on roundness for feature detection
+	daofind.findpars.roundhi = roundhi #upper bound on roundness for feature detection
+	#daofind.findpars.mkdetections = mkdetections #mark detected stars on the display
 
 
-	apphot.daofind.unlearn()
-	apphot.daofind.verify = 'no'	
-	apphot.daofind.update = 'no'
-	apphot.daofind(image=input_image, output = output, starmap=starmap, skymap=skymap)
+	daofind.unlearn()
+	daofind.verify = 'no'
+	daofind.update = 'no'
+	daofind.verbose = 'no'
+	daofind(image=input_image, output = output, starmap=starmap, skymap=skymap)
 
-	
+
 
 
 if __name__ == "__main__":
-	
-	from get_image_bkg_stddev_rough import estimate_bkg_stddev 
+
+	from get_image_bkg_stddev_rough import estimate_bkg_stddev
 
 	import optparse
 	parser = optparse.OptionParser()
@@ -82,10 +80,9 @@ if __name__ == "__main__":
 	def_fwhmpsf = 5
 	parser.add_option('--fwhmpsf', dest = 'fwhmpsf', type = float, default= def_fwhmpsf, help='FWHM of the PSF in scale unit; default: %s'%def_fwhmpsf )
 
-
 	def_sigma = None
 	parser.add_option('--sigma', dest = 'sigma', type = float , default= def_sigma, help='standard of deviation of background in counts; default: %s'%def_sigma )
-	
+
 	def_datamin = None
 	parser.add_option('--datamin', dest = 'datamin', type = float, default= def_datamin, help='minimum good value; default: %s'%def_datamin )
 
@@ -105,14 +102,11 @@ if __name__ == "__main__":
 	def_sharphi = 1
 	parser.add_option('--sharphi', dest = 'sharphi', type = float, default= def_sharphi, help='image sharpness; default: %s'%def_sharphi )
 
-	
 	def_sharplo = 0.2
 	parser.add_option('--sharplo', dest = 'sharplo', type = float, default= def_sharplo, help='image sharpness; default: %s'%def_sharplo )
 
-
-
-	def_deleteINDEF = False 
-        parser.add_option('-d','--deleteINDEF', dest="deleteINDEF",action="store_true", default=def_deleteINDEF, help="whether delete lines containing INDEF[%s]"%def_deleteINDEF)	
+	def_deleteINDEF = False
+        parser.add_option('-d','--deleteINDEF', dest="deleteINDEF",action="store_true", default=def_deleteINDEF, help="whether delete lines containing INDEF[%s]"%def_deleteINDEF)
 
 	options, remainder = parser.parse_args()
 
@@ -121,19 +115,18 @@ if __name__ == "__main__":
 	starmap = options.starmap
 	skymap  = options.skymap
 	fwhmpsf= options.fwhmpsf
-	emission=True 
+	emission=True
 	sigma= options.sigma
 	datamin= options.datamin
 	datamax= options.datamax
 	readnoise= options.readnoise
 	epadu= options.epadu
 	threshold= options.threshold
-	sharplo = options.sharplo	
+	sharplo = options.sharplo
 	sharphi  = options.sharphi
-	deleteINDEF = options.deleteINDEF 	
+	deleteINDEF = options.deleteINDEF
 
 	nsigma=1.5
-	
 
 	if sigma is None:
 		stddev1, stddev2 = estimate_bkg_stddev(input_image, epadu=epadu)
@@ -146,24 +139,3 @@ if __name__ == "__main__":
 		datamax = 'INDEF'
 
 	daofind_iraf(input_image, output=output, starmap=starmap, skymap=skymap, fwhmpsf=fwhmpsf, emission=emission, sigma=sigma, datamin=datamin, datamax=datamax, readnoise=readnoise, epadu=epadu, threshold=threshold, sharplo=sharplo, sharphi=sharphi,  nsigma=nsigma)
-
-	if deleteINDEF:
-		savelines_index = []
-		source_lines = np.array(open(output).readlines())
-		for i,line in enumerate(source_lines):
-			if i<41:
-				continue
-			linesegs= line.split()
-			if 'INDEF' not in linesegs:
-				savelines_index.append(i)	
-		
-		savelines = source_lines[savelines_index]
-#		print savelines
-			
-		if os.path.exists(output):
-			os.remove(output)
-
-		fid = open(output,'awt')
-		for line in savelines:
-			fid.write(line)
-		fid.close()

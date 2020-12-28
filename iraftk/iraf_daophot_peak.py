@@ -1,14 +1,12 @@
 #! /usr/bin/python
 
-import numpy as np
 from pyraf import iraf
-from iraf import digiphot,apphot,daophot
-import os
-from astropy.io import fits
-from astropy.table import Table
+from iraf import daophot
+from iraf import peak
+from iraf import substar
 
 
-def daophot_peak_iraf(image, photfile, psfimage, peakfile, rejfile, fitrad=3):
+def daophot_peak_iraf(image, photfile, psfimage, peakfile, rejfile, fitrad=3, refitsky='yes', recenter='yes', sannulus=None, wsannulus=10, psfrad=11):
 	'''
 	INPUTS:
 		image:
@@ -17,21 +15,44 @@ def daophot_peak_iraf(image, photfile, psfimage, peakfile, rejfile, fitrad=3):
 		peakfile:
 		rejfile:
 	'''
+	peak.unlearn()
+	peak.datapars.unlearn()
+	peak.daopars.unlearn()
+	peak.daopars.fitsky = refitsky
+	peak.daopars.recenter = recenter
+	if sannulus is None:
+		sannulus = fitrad
+	peak.daopars.sannulus = sannulus
+	peak.daopars.wsannulus = wsannulus
+	peak.daopars.fitrad = fitrad
+	peak.daopars.psfrad = psfrad
 
-	daophot.datapars.unlearn()
-	daophot.daopars.unlearn()
-	daophot.daopars.fitrad = fitrad
-	daophot.peak.unlearn()
+	peak(image=image, photfile=photfile,  psfimage=psfimage, peakfile=peakfile, rejfile=rejfile, verify='no', update='no')	
 
-	daophot.peak(image=image, photfile=photfile,  psfimage=psfimage, peakfile=peakfile, rejfile=rejfile, verify='no', update='no')	
 
+def daophot_substar_iraf(image, photfile, exfile, psfimage, subimage, fitrad=3, psfrad=11):
+	'''
+	INPUTS:
+		image:
+		photfile:
+		exfile:
+		psfimage:
+		subimage:
+	'''
+
+	substar.datapars.unlearn()
+	substar.daopars.unlearn()
+	substar.daopars.fitrad = fitrad
+	substar.daopars.psfrad = psfrad
+	substar.unlearn()
+
+	substar(image=image, photfile=photfile, exfile=exfile, psfimage=psfimage, subimage=subimage,  verify='no', update='no')	
 
 
 if __name__ == "__main__":
 	
 	import optparse
 	parser = optparse.OptionParser()
-
 
 	def_inputimage = ''
 	parser.add_option('-i','--input_image', dest = 'input_image', type= 'string', default = def_inputimage, help='input image')
@@ -47,7 +68,6 @@ if __name__ == "__main__":
 
 	def_rejfile = 'default'
 	parser.add_option('--rejfile', dest = 'rejfile', type= 'string', default = def_rejfile, help='output rejection file')
-
 
 	def_fitrad = 5.0
 	parser.add_option('-r','--fitrad', dest='fitrad', type=float, default=def_fitrad, help='fitting radius in scale units; default: %s'%def_fitrad)

@@ -1,12 +1,8 @@
 #! /usr/bin/python
 
-import numpy as np
 from pyraf import iraf
-from iraf import digiphot,apphot,daophot
-import os
-from astropy.io import fits
-from astropy.table import Table
-
+from iraf import daophot
+from iraf import nstar
 
 def daophot_nstar_iraf(image, groupfile, psfimage, nstarfile, rejfile):
 	'''
@@ -17,12 +13,11 @@ def daophot_nstar_iraf(image, groupfile, psfimage, nstarfile, rejfile):
 		nstarfile:
 		rejfile:
 	'''
+	nstar.datapars.unlearn()
+	nstar.daopars.unlearn()
+	nstar.unlearn()
 
-	daophot.datapars.unlearn()
-	daophot.daopars.unlearn()
-	daophot.nstar.unlearn()
-
-	daophot.nstar(image=image, groupfile=groupfile,  psfimage=psfimage, nstarfile=nstarfile, rejfile=rejfile, verify='no', update='no')	
+	nstar(image=image, groupfile=groupfile,  psfimage=psfimage, nstarfile=nstarfile, rejfile=rejfile, verify='no', update='no')	
 
 
 
